@@ -46,6 +46,7 @@ class TransactionsView extends StatelessWidget {
             itemBuilder: (context, index) {
               final transaction = state.transactions[index];
               return ListTile(
+                key: const Key('transactions'),
                 title: Text('Transaction ${transaction.id}'),
                 subtitle: Text('Amount: ${transaction.body}'),
               );

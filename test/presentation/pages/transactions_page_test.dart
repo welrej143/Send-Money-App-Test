@@ -17,14 +17,11 @@ void main() {
     mockTransactionsBloc = MockTransactionsBloc();
   });
 
-  testWidgets('TransactionsPage UI Test', (WidgetTester tester) async {
-    final transactions = [
-      Transaction(id: '1', body: '100'),
-    ];
+  tearDown(() {
+    mockTransactionsBloc.close();
+  });
 
-    when(mockTransactionsBloc.state)
-        .thenReturn(TransactionsLoaded(transactions));
-
+  testWidgets('TransactionsPage Title', (WidgetTester tester) async {
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
@@ -39,24 +36,54 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Transactions'), findsOneWidget);
-
-    expect(find.byType(CircularProgressIndicator), findsNothing);
   });
 
-  testWidgets('TransactionsPage UI Test - Error State',
+  testWidgets('TransactionsPage UI Test - TransactionsLoaded State',
       (WidgetTester tester) async {
-    when(mockTransactionsBloc.state).thenReturn(TransactionsError());
+    final transactions = [
+      Transaction(id: '1', body: '100'),
+    ];
+
+    when(mockTransactionsBloc.state)
+        .thenReturn(TransactionsLoaded(transactions));
+    when(mockTransactionsBloc.stream)
+        .thenAnswer((_) => Stream.value(TransactionsLoaded(transactions)));
 
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
           body: BlocProvider.value(
             value: mockTransactionsBloc,
-            child: const TransactionsPage(),
+            child: const TransactionsView(),
           ),
         ),
       ),
     );
+
+    await tester.pumpAndSettle();
+
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+    expect(find.byKey(const Key('transactions')), findsOneWidget);
+  });
+
+  testWidgets('TransactionsPage UI Test - Error State',
+      (WidgetTester tester) async {
+    when(mockTransactionsBloc.state).thenReturn(TransactionsError());
+    when(mockTransactionsBloc.stream)
+        .thenAnswer((_) => Stream.value(TransactionsError()));
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: BlocProvider.value(
+            value: mockTransactionsBloc,
+            child: const TransactionsView(),
+          ),
+        ),
+      ),
+    );
+
+    await tester.pumpAndSettle();
 
     expect(find.text('Failed to load transactions'), findsOneWidget);
   });
