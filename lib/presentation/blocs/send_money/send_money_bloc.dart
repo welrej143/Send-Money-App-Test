@@ -7,9 +7,9 @@ part 'send_money_event.dart';
 part 'send_money_state.dart';
 
 class SendMoneyBloc extends Bloc<SendMoneyEvent, SendMoneyState> {
-  final PostTransaction? postTransactions;
+  final PostTransaction postTransactions;
 
-  SendMoneyBloc({this.postTransactions}) : super(SendMoneyInitial()) {
+  SendMoneyBloc({required this.postTransactions}) : super(SendMoneyInitial()) {
     on<SubmitSendMoney>(_onSubmitSendMoney);
   }
 
@@ -18,7 +18,7 @@ class SendMoneyBloc extends Bloc<SendMoneyEvent, SendMoneyState> {
     emit(SendMoneyLoading());
     try {
       final transaction = TransactionModel(body: event.amount.toString());
-      await postTransactions!(transaction);
+      await postTransactions(transaction);
 
       emit(SendMoneySuccess());
     } catch (_) {
